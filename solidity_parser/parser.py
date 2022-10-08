@@ -17,11 +17,12 @@ class Node(dict):
     provide a dict interface and object attrib access
     """
     ENABLE_LOC = False
-    NONCHILD_KEYS = ("type","name","loc")
+    NONCHILD_KEYS = ("type", "name", "loc")
 
     def __init__(self, ctx, **kwargs):
-        for k, v in kwargs.items():
-            self[k] = v
+        super(Node, self).__init__(**kwargs)
+        # for k, v in kwargs.items():
+        #     self[k] = v
 
         if Node.ENABLE_LOC:
             self["loc"] = Node._get_loc(ctx)
@@ -131,7 +132,6 @@ class AstVisitor(SolidityVisitor):
                     name=ctx.identifier().getText(),
                     elementaryTypeName=self.visit(ctx.elementaryTypeName()))
 
-
     def visitCustomErrorDefinition(self, ctx):
         return Node(ctx=ctx,
                     type="CustomErrorDefinition",
@@ -144,7 +144,6 @@ class AstVisitor(SolidityVisitor):
                     name=self.visit(ctx.identifier()),
                     typeName=self.visit(ctx.typeName()),
                     ConstantKeyword=self.visit(ctx.ConstantKeyword()))
-
 
     def visitUsingForDeclaration(self, ctx: SolidityParser.UsingForDeclarationContext):
         typename = None
@@ -165,9 +164,8 @@ class AstVisitor(SolidityVisitor):
     def visitContractPart(self, ctx: SolidityParser.ContractPartContext):
         return self.visit(ctx.children[0])
 
-
     def visitFunctionDefinition(self, ctx: SolidityParser.FunctionDefinitionContext):
-        isConstructor = isFallback =isReceive = False
+        isConstructor = isFallback = isReceive = False
 
         fd = ctx.functionDescriptor()
         if fd.ConstructorKeyword():
@@ -481,7 +479,7 @@ class AstVisitor(SolidityVisitor):
     def visitUncheckedStatement(self, ctx):
         return Node(ctx=ctx,
                     type='UncheckedStatement',
-                    body=self.visit(ctx.block())) 
+                    body=self.visit(ctx.block()))
 
     def visitRevertStatement(self, ctx):
         return Node(ctx=ctx,
@@ -666,7 +664,6 @@ class AstVisitor(SolidityVisitor):
 
         return self.visit(list(ctx.getChildren()))
 
-
     def visitStateVariableDeclaration(self, ctx):
         type = self.visit(ctx.typeName())
         iden = ctx.identifier()
@@ -718,8 +715,8 @@ class AstVisitor(SolidityVisitor):
             conditionExpression = conditionExpression.expression
 
         loopExpression = Node(ctx=ctx,
-            type='ExpressionStatement',
-            expression=self.visit(ctx.expression())) if ctx.expression() else None
+                              type='ExpressionStatement',
+                              expression=self.visit(ctx.expression())) if ctx.expression() else None
 
         return Node(ctx=ctx,
                     type='ForStatement',
@@ -852,11 +849,11 @@ class AstVisitor(SolidityVisitor):
                 name = paramCtx.identifier().getText()
 
             parameters.append(self._createNode(ctx=ctx,
-                type='VariableDeclaration',
-                typeName=type,
-                name=name,
-                isStateVar=False,
-                isIndexed=not not paramCtx.IndexedKeyword()))
+                                               type='VariableDeclaration',
+                                               typeName=type,
+                                               name=name,
+                                               isStateVar=False,
+                                               isIndexed=not not paramCtx.IndexedKeyword()))
 
         return Node(ctx=ctx,
                     type='ParameterList',
@@ -1075,12 +1072,20 @@ class AstVisitor(SolidityVisitor):
 
     def visitContractDefinition(self, ctx):
         self._currentContract = ctx.identifier().getText()
-        return Node(ctx=ctx,
-                    type="ContractDefinition",
-                    name=ctx.identifier().getText(),
-                    baseContracts=self.visit(ctx.inheritanceSpecifier()),
-                    subNodes=self.visit(ctx.contractPart()),
-                    kind=ctx.getChild(0).getText())
+        kind = ctx.getChild(0).getText()
+        if kind == 'interface':
+            return Node(ctx=ctx,
+                        type="InterfaceDefinition",
+                        name=ctx.identifier().getText(),
+                        subNodes=self.visit(ctx.contractPart()),
+                        kind=kind)
+        else:
+            return Node(ctx=ctx,
+                        type="ContractDefinition",
+                        name=ctx.identifier().getText(),
+                        baseContracts=self.visit(ctx.inheritanceSpecifier()),
+                        subNodes=self.visit(ctx.contractPart()),
+                        kind=kind)
 
     def visitUserDefinedTypename(self, ctx):
         return Node(ctx=ctx,
@@ -1139,10 +1144,10 @@ def visit(node, callback_object):
         return node
 
     # call callback if it is available
-    if hasattr(callback_object, "visit"+node.type):
-        getattr(callback_object, "visit"+node.type)(node)
+    if hasattr(callback_object, "visit" + node.type):
+        getattr(callback_object, "visit" + node.type)(node)
 
-    for k,v in node.items():
+    for k, v in node.items():
         if k in node.NONCHILD_KEYS:
             # skip non child items
             continue
@@ -1194,7 +1199,6 @@ def objectify(start_node):
             self.constructor = None
             self.inherited_names = {}
 
-
         def visitEnumDefinition(self, _node):
             self.enums[_node.name]=_node
             self.names[_node.name]=_node
@@ -1233,14 +1237,13 @@ def objectify(start_node):
             self.names[_node.name] = current_function
             self.events[_node.name] = current_function
 
-
         def visitFunctionDefinition(self, _node, _definition_type=None):
 
             class FunctionObject(object):
 
                 def __init__(self, node):
                     self._node = node
-                    if(node.type=="FunctionDefinition"):
+                    if (node.type == "FunctionDefinition"):
                         self.visibility = node.visibility
                         self.stateMutability = node.stateMutability
                         self.isConstructor = node.isConstructor
@@ -1250,8 +1253,6 @@ def objectify(start_node):
                     self.returns = {}
                     self.declarations = {}
                     self.identifiers = []
-                    
-                    
 
             class FunctionArgumentVisitor(object):
 
@@ -1282,7 +1283,7 @@ def objectify(start_node):
 
             current_function = FunctionObject(_node)
             self.names[_node.name] = current_function
-            if _definition_type=="ModifierDefinition":
+            if _definition_type == "ModifierDefinition":
                 self.modifiers[_node.name] = current_function
             else:
                 self.functions[_node.name] = current_function
@@ -1295,7 +1296,6 @@ def objectify(start_node):
             current_function.arguments = funcargvisitor.parameters
             current_function.declarations.update(current_function.arguments)
 
-
             ## get returnParams
             if _node.get("returnParameters"):
                 # because modifiers dont
@@ -1303,7 +1303,6 @@ def objectify(start_node):
                 visit(_node.returnParameters, funcargvisitor)
                 current_function.returns = funcargvisitor.parameters
                 current_function.declarations.update(current_function.returns)
-
 
             ## get vardecs in body
             vardecs = VarDecVisitor()
@@ -1318,7 +1317,6 @@ def objectify(start_node):
         def visitModifierDefinition(self, _node):
             return self.visitFunctionDefinition(_node, "ModifierDefinition")
 
-
     class ObjectifySourceUnitVisitor(object):
 
         def __init__(self, node):
@@ -1326,6 +1324,7 @@ def objectify(start_node):
             self.imports = []
             self.pragmas = []
             self.contracts = {}
+            self.interfaces = {}
 
             self._current_contract = None
 
@@ -1341,6 +1340,11 @@ def objectify(start_node):
 
             # subparse the contracts //slightly inefficient but more readable :)
             visit(node, self.contracts[node.name])
+
+        def visitInterfaceDefinition(self, node):
+            self.interfaces[node.name] = ObjectifyContractVisitor(node)
+            self._current_contract = self.interfaces[node.name]
+            visit(node, self.interfaces[node.name])
 
     objectified_source_unit = ObjectifySourceUnitVisitor(start_node)
     visit(start_node, objectified_source_unit)
