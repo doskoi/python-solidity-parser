@@ -1,2 +1,3 @@
-import solidity_parser.parser
-__ALL__ = ["parser"]
+from solidity_parser.parser import Node, AstVisitor, parse, parse_file, visit, objectify
+
+__ALL__ = ["Node", "AstVisitor", "parse", "parse_file", "visit", "objectify"]
