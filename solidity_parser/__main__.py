@@ -3,7 +3,7 @@
 
 import sys
 import pprint
-from . import parser
+from solidity_parser import parser
 
 if __name__ == "__main__":
     if not len(sys.argv)>2 or sys.argv[1] not in ("parse","outline"):
