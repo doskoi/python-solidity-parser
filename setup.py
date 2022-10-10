@@ -19,7 +19,7 @@ def read(fname):
 
 
 version = "0.1.1"
-name = "solidity-parser"
+name = "solidity_parser"
 
 setup(
     name=name,
