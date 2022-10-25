@@ -7,6 +7,7 @@
 
 
 from antlr4 import *
+
 from .solidity_antlr4.SolidityLexer import SolidityLexer
 from .solidity_antlr4.SolidityParser import SolidityParser
 from .solidity_antlr4.SolidityVisitor import SolidityVisitor
@@ -153,7 +154,7 @@ class AstVisitor(SolidityVisitor):
         return Node(ctx=ctx,
                     type="UsingForDeclaration",
                     typeName=typename,
-                    libraryName=ctx.identifier().getText())
+                    libraryName=ctx.usingForObject().getText())
 
     def visitInheritanceSpecifier(self, ctx: SolidityParser.InheritanceSpecifierContext):
         return Node(ctx=ctx,
@@ -162,7 +163,11 @@ class AstVisitor(SolidityVisitor):
                     arguments=self.visit(ctx.expressionList()))
 
     def visitContractPart(self, ctx: SolidityParser.ContractPartContext):
-        return self.visit(ctx.children[0])
+        # children = ctx.children[0]
+        if ctx.children is None:
+            return []
+        else:
+            return self.visit(ctx.children[0])
 
     def visitFunctionDefinition(self, ctx: SolidityParser.FunctionDefinitionContext):
         isConstructor = isFallback = isReceive = False
@@ -341,10 +346,15 @@ class AstVisitor(SolidityVisitor):
         if ctx.storageLocation():
             storageLocation = ctx.storageLocation().getText()
 
+        if ctx.identifier() is None:
+            name = None
+        else:
+            name = ctx.identifier().getText()
+
         return Node(ctx=ctx,
                     type='VariableDeclaration',
                     typeName=self.visit(ctx.typeName()),
-                    name=ctx.identifier().getText(),
+                    name=name,
                     storageLocation=storageLocation)
 
     def visitEventParameter(self, ctx):
@@ -474,7 +484,10 @@ class AstVisitor(SolidityVisitor):
         return self.visit(ctx.getChild(0))
 
     def visitSimpleStatement(self, ctx):
-        return self.visit(ctx.getChild(0))
+        if ctx.children is not None:
+            return self.visit(ctx.getChild(0))
+        else:
+            return None
 
     def visitUncheckedStatement(self, ctx):
         return Node(ctx=ctx,
@@ -667,7 +680,10 @@ class AstVisitor(SolidityVisitor):
     def visitStateVariableDeclaration(self, ctx):
         type = self.visit(ctx.typeName())
         iden = ctx.identifier()
-        name = iden.getText()
+        if iden is None:
+            name = None
+        else:
+            name = iden.getText()
 
         expression = None
 
@@ -987,14 +1003,25 @@ class AstVisitor(SolidityVisitor):
                     expression=self.visit(ctx.assemblyExpression()))
 
     def visitAssemblyFunctionDefinition(self, ctx):
-        args = ctx.assemblyIdentifierList().identifier()
-        returnArgs = ctx.assemblyFunctionReturns().assemblyIdentifierList().identifier()
+        argsTmp = ctx.assemblyIdentifierList()
+
+        if argsTmp is None:
+            args = []
+        else:
+            args = self.visit(argsTmp.identifier())
+
+        functionReturn = ctx.assemblyFunctionReturns()
+        if functionReturn is not None:
+            returnArgsTmp = ctx.assemblyFunctionReturns().assemblyIdentifierList().identifier()
+            returnArgs = self.visit(returnArgsTmp)
+        else:
+            returnArgs = None
 
         return Node(ctx=ctx,
                     type='AssemblyFunctionDefinition',
                     name=ctx.identifier().getText(),
-                    arguments=self.visit(args),
-                    returnArguments=self.visit(returnArgs),
+                    arguments=args,
+                    returnArguments=returnArgs,
                     body=self.visit(ctx.assemblyBlock()))
 
     def visitAssemblyAssignment(self, ctx):
@@ -1200,12 +1227,12 @@ def objectify(start_node):
             self.inherited_names = {}
 
         def visitEnumDefinition(self, _node):
-            self.enums[_node.name]=_node
-            self.names[_node.name]=_node
+            self.enums[_node.name] = _node
+            self.names[_node.name] = _node
 
         def visitStructDefinition(self, _node):
-            self.structs[_node.name]=_node
-            self.names[_node.name]=_node
+            self.structs[_node.name] = _node
+            self.names[_node.name] = _node
 
         def visitStateVariableDeclaration(self, _node):
 
