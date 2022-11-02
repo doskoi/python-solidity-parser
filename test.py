@@ -27,7 +27,11 @@ def parse_test(param: Tuple[str, str]):
 class MyTestCase(unittest.TestCase):
 
     def test_something(self):
-        path = "/mnt/work/code/GongSI/lskj/Background_Project/chain_monitoring/tmp/test_contract"
+        """
+        单独测试指定合约解析是否存在报错
+        :return:
+        """
+        path = "tmp/test_contract"
 
         dir = "0xA8D5DFcf36bCb29adF9EBbD753c2978B9a982cC6"
 
@@ -46,10 +50,10 @@ class MyTestCase(unittest.TestCase):
 
     def test_from_file_pool(self):
         """
-        批量测试文件语法解析
+        批量测试文件语法解析 多进程
         :return:
         """
-        path = "/mnt/work/code/GongSI/lskj/Background_Project/chain_monitoring/tmp/test_contract"
+        path = "tmp/test_contract"
 
         pool = Pool(processes=16)  # 默认线程数为16
 
@@ -80,7 +84,7 @@ class MyTestCase(unittest.TestCase):
         批量测试文件语法解析
         :return:
         """
-        path = "/mnt/work/code/GongSI/lskj/Background_Project/chain_monitoring/tmp/test_contract"
+        path = "tmp/test_contract"
 
 
         for dir in os.listdir(path):  # 不仅仅是文件，当前目录下的文件夹也会被认为遍历到
