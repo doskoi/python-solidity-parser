@@ -1,7 +1,7 @@
 # python-solidity-parser
 An experimental Solidity parser for Python built on top of a robust ANTLR4 grammar.
 
-*** This is a **python3** port of the [javascript antlr parser](https://github.com/federicobond/solidity-parser-antlr) maintained by [@federicobond](https://github.com/federicobond/). Interfaces are intentionally following the javascript implementation and are therefore not pep8 compliant.
+**ⓘ** This is a **python3** port of the [javascript antlr parser](https://github.com/federicobond/solidity-parser-antlr) maintained by [@federicobond](https://github.com/federicobond/). Interfaces are intentionally following the javascript implementation and are therefore not pep8 compliant.
 
 
 
@@ -78,7 +78,6 @@ sourceUnitObject.contracts["contractName"].functions["myFunction"].visibility  #
 Update the grammar in `./solidity-antlr4/Solidity.g4` and run the antlr generator script to create the parser classes in `solidity_parser/solidity_antlr4`.
 ```
 #> bash script/antlr4.sh
-```
 
 
 
@@ -103,7 +102,3 @@ venv/bin/antlr4 -Dlanguage=Python3 -visitor solidity-antlr4/Solidity.g4 -o solid
 ```
 
 This will generate the relevant target files. Replace all files in `src/solidity_parser/solidity_antlr4/` with the generated files.
-
-
-
-
