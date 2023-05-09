@@ -82,26 +82,27 @@ Update the grammar in `./solidity-antlr4/Solidity.g4` and run the antlr generato
 
 
 
-## 更新核心库
+## Update the Core Library
 
-下载Solidity.g4文件：
+Download the Solidity.g4 file:
 https://github.com/antlr/grammars-v4/tree/master/solidity
-该文件定义最新Solidity语法
+This file defines the latest Solidity syntax.
 
-安装antlr4:
+Install antlr4:
 https://github.com/antlr/antlr4/blob/master/doc/getting-started.md
 
-生成python目标
+Generate Python targets:
 
-在Solidity.g4文件的指定目录下运行
+Run the following command in the specified directory of the Solidity.g4 file:
 
-需要使用 java11
+Requires java11
 
 ```python -D
 antlr4 -Dlanguage=Python3 -visitor Solidity.g4
 venv/bin/antlr4 -Dlanguage=Python3 -visitor solidity-antlr4/Solidity.g4 -o solidity_parser/solidity_antlr4/
 ```
-即可生成相关目标文件，将生成的文件替换掉 src/solidity_parser/solidity_antlr4下的所有文件
+
+This will generate the relevant target files. Replace all files in `src/solidity_parser/solidity_antlr4/` with the generated files.
 
 
 
