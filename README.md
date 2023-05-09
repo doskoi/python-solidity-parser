@@ -7,7 +7,7 @@ An experimental Solidity parser for Python built on top of a robust ANTLR4 gramm
 Update the grammar in `./solidity-antlr4/Solidity.g4` and run the antlr generator script to create the parser classes in `solidity_parser/solidity_antlr4`.
 ```
 #> bash script/antlr4.sh
-
+```
 
 ## Update the Core Library
 
